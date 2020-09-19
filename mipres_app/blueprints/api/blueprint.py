@@ -1,5 +1,7 @@
 from flask import Blueprint
 from flask_restless_swagger import SwagAPIManager as APIManager
+
+from mipres_app.resources.addressing import AddressingView, SWAGGER_ADDRESSING_SCHEMA
 from mipres_app.resources.security.authentication import AuthenticationView, SWAGGER_AUTHENTICATION_SCHEMA
 
 
@@ -20,6 +22,9 @@ class BlueprintAPI(Blueprint):
 
         paths.update(SWAGGER_AUTHENTICATION_SCHEMA)
         app.add_url_rule('%s/login' % url_prefix, view_func=AuthenticationView.as_view('login'), methods=['POST'])
+
+        paths.update(SWAGGER_ADDRESSING_SCHEMA)
+        app.add_url_rule('%s/addressing' % url_prefix, view_func=AddressingView.as_view('addressing'), methods=['POST'])
 
 
 blueprint_api = BlueprintAPI('blueprint_api', __name__)
