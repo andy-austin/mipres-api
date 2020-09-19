@@ -13,6 +13,7 @@ app = Flask('mipresApi', root_path=root_path)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mssql+pymssql://sa:Rabbit99@localhost/mipresApi'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = '95C84B76351B248ECB7EA58319BA6'
+app.config['MIPRES_API'] = "https://wsmipres.sispro.gov.co/WSSUMMIPRESNOPBS/Api"
 
 db_session = SQLAlchemy(app)
 

@@ -26,3 +26,4 @@ Flask-JWT-Extended==3.24.1
 flask-restless-swagger-2 @ git+https://github.com/andyferg/flask-restless-swagger.git@c68f0a8b3db0147ea3193da39f49dbfa3901b275
 PyJWT==1.7.1
 pyodbc==4.0.30
+requests==2.24.0
