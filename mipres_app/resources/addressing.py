@@ -74,7 +74,7 @@ class AddressingView(MethodView):
 
         documents = Addressing.query.get_by_date_range(start_date, end_date).all()
 
-        return jsonify(data=documents), 200
+        return jsonify(documents), 200
 
     @staticmethod
     @jwt_required
