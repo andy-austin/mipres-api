@@ -14,7 +14,7 @@ class BlueprintAPI(Blueprint):
         kwargs = {'host': '127.0.0.1:5000', 'produces': [self.CONTENT_TYPE], 'consumes': [self.CONTENT_TYPE]}
         db_session = options.get('db_session', None)
 
-        api_manager = APIManager(app=app, session=db_session.session if db_session else None, url_prefix='/api')
+        api_manager = APIManager(app=app, session=db_session if db_session else None, url_prefix='/api')
         api_manager.swagger.update(**kwargs)
 
         url_prefix = options.get('url_prefix', '/api')
@@ -24,7 +24,9 @@ class BlueprintAPI(Blueprint):
         app.add_url_rule('%s/login' % url_prefix, view_func=AuthenticationView.as_view('login'), methods=['POST'])
 
         paths.update(SWAGGER_ADDRESSING_SCHEMA)
-        app.add_url_rule('%s/addressing' % url_prefix, view_func=AddressingView.as_view('addressing'), methods=['POST'])
+        app.add_url_rule(
+            '%s/addressing' % url_prefix, view_func=AddressingView.as_view('addressing'), methods=['POST', 'GET']
+        )
 
 
 blueprint_api = BlueprintAPI('blueprint_api', __name__)

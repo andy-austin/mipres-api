@@ -3,27 +3,27 @@ import os.path as op
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
+from flask_mongoalchemy import MongoAlchemy
 
 root_path = op.join(op.dirname(__file__), '../')
 
 app = Flask('mipresApi', root_path=root_path)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mssql+pymssql://sa:Rabbit99@localhost/mipresApi'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['MONGOALCHEMY_DATABASE'] = 'mipres'
+app.config['MONGOALCHEMY_REPLICA_SET'] = None
 app.config['JWT_SECRET_KEY'] = '95C84B76351B248ECB7EA58319BA6'
 app.config['MIPRES_API'] = "https://wsmipres.sispro.gov.co/WSSUMMIPRESNOPBS/Api"
 
-db_session = SQLAlchemy(app)
+db_session = MongoAlchemy(app)
 
 
 def create_app(debug=False):
     from mipres_app.blueprints.api.blueprint import blueprint_api
+    from mipres_app.json import JsonEncoder
 
     app.debug = debug
+    app.json_encoder = JsonEncoder
 
-    Migrate(app, db_session)
     JWTManager(app)
     CORS(app)
 

@@ -1,6 +1,7 @@
 import requests
 from flask import jsonify, request, current_app
 from flask.views import MethodView
+from flask_jwt_extended import create_access_token
 
 SWAGGER_AUTHENTICATION_SCHEMA = {
     '/login': {
@@ -45,10 +46,13 @@ class AuthenticationView(MethodView):
         if not nit or not token_pres or not token_prov:
             return jsonify({"msg": "Missing parameter"}), 400
 
-        response_pres = AuthenticationView.generate_token(nit, token_pres)
-        response_prov = AuthenticationView.generate_token(nit, token_prov)
+        identity = dict(
+            nit=nit,
+            token_pres=AuthenticationView.generate_token(nit, token_pres),
+            token_prov=AuthenticationView.generate_token(nit, token_prov),
+        )
 
-        return jsonify(temp_token_pres=response_pres, temp_token_prov=response_prov), 200
+        return jsonify(access_token=create_access_token(identity=identity)), 200
 
     @staticmethod
     def generate_token(nit, token):
