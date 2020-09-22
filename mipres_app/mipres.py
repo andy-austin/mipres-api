@@ -9,7 +9,10 @@ root_path = op.join(op.dirname(__file__), '../')
 
 app = Flask('mipresApi', root_path=root_path)
 
-app.config['MONGOALCHEMY_DATABASE'] = 'mipres'
+app.config['MONGOALCHEMY_DATABASE'] = '900285194'
+app.config['MONGOALCHEMY_CONNECTION_STRING'] = 'mongodb+srv://%s:%s@%s/%s?retryWrites=true&w=majority' % (
+    'mipres', 'admin', 'm2.twsaq.mongodb.net', '900285194'
+)
 app.config['MONGOALCHEMY_REPLICA_SET'] = None
 app.config['JWT_SECRET_KEY'] = '95C84B76351B248ECB7EA58319BA6'
 app.config['MIPRES_API'] = "https://wsmipres.sispro.gov.co/WSSUMMIPRESNOPBS/Api"
