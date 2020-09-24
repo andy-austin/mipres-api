@@ -5,7 +5,7 @@ from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt_identity
 
-from mipres_app.models.addressing import Addressing
+from mipres_app.models.addressing import AddressingMeta
 
 SWAGGER_ADDRESSING_SCHEMA = {
     '/addressing': {
@@ -72,9 +72,12 @@ class AddressingView(MethodView):
         start_date = request.args.get('startDate', None)
         end_date = request.args.get('endDate', None)
 
-        documents = Addressing.query.get_by_date_range(start_date, end_date).all()
+        documents = AddressingMeta.query.get_by_date_range(start_date, end_date).all()
+        response = []
+        for document in documents:
+            response += document.entities
 
-        return jsonify(documents), 200
+        return jsonify(response), 200
 
     @staticmethod
     @jwt_required
@@ -90,7 +93,7 @@ class AddressingView(MethodView):
 
         identity = get_jwt_identity()
 
-        Addressing.handle(identity, start_date, end_date, AddressingView.generate_token)
+        AddressingMeta.handle(identity, start_date, end_date, AddressingView.generate_token)
 
         return jsonify(message='Ok'), 200
 

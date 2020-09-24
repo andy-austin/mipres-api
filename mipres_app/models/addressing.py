@@ -1,5 +1,3 @@
-import json
-
 from flask_mongoalchemy import BaseQuery
 from mipres_app.mipres import db_session
 from datetime import datetime, timedelta
@@ -7,37 +5,45 @@ from datetime import datetime, timedelta
 
 class AddressingQuery(BaseQuery):
     def get_by_date_range(self, start_date, end_date):
-        return self.filter(start_date >= self.type.document_date <= end_date)
+        return self.filter(self.type.document_date >= start_date, self.type.document_date <= end_date)
 
 
 class Addressing(db_session.Document):
+    config_extra_fields = 'ignore'
+
+    @staticmethod
+    def save_document(document):
+        entity = Addressing(**document)
+        entity.save()
+        return entity
+
+    def json(self):
+        return self.get_extra_fields()
+
+
+class AddressingMeta(db_session.Document):
     query_class = AddressingQuery
 
     exec_date = db_session.StringField()
     document_date = db_session.StringField()
     observation = db_session.StringField()
-    response = db_session.StringField()
     docs_amount = db_session.IntField()
-
-    def json(self):
-        return dict(
-            exec_date=self.exec_date,
-            document_date=self.document_date,
-            observation=self.observation,
-            response=json.loads(self.response),
-            docs_amount=self.docs_amount
-        )
+    entities = db_session.ListField(db_session.DocumentField(Addressing))
 
     @staticmethod
     def save_document(start_date, response, docs_amount):
-        entity = Addressing(
-            exec_date=datetime.utcnow().strftime('%Y-%m-%d'),
+        entities = []
+        for entity in response:
+            entities.append(Addressing.save_document(entity))
+
+        meta = AddressingMeta(
+            exec_date=str(datetime.utcnow()),
             document_date=start_date.strftime("%Y-%m-%d"),
             observation='Descargado' if docs_amount > 0 else 'Dia vacio',
-            response=json.dumps(response),
-            docs_amount=docs_amount
+            docs_amount=docs_amount,
+            entities=entities,
         )
-        entity.save()
+        meta.save()
 
     @staticmethod
     def handle(identity, start_date, end_date, generate_token):
@@ -47,5 +53,5 @@ class Addressing(db_session.Document):
 
         while start_date <= end_date:
             response = generate_token(identity.get('nit'), identity.get('token_pres'), start_date.strftime("%Y-%m-%d"))
-            Addressing.save_document(start_date, response, len(response))
+            AddressingMeta.save_document(start_date, response, len(response))
             start_date += delta
