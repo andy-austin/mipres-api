@@ -1,0 +1,19 @@
+variables:
+  TAG_NAME: ${CI_COMMIT_REF_SLUG}-${CI_PIPELINE_ID}
+
+stages:
+  - build
+
+build:
+  stage: build
+  image: docker:git
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay
+  script:
+    - docker login -u $CI_BUILD_USERNAME -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker build --build-arg ssl=true -t $CI_REGISTRY_IMAGE:$TAG_NAME .
+    - docker push $CI_REGISTRY_IMAGE:$TAG_NAME
+  only:
+    - master
