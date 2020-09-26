@@ -26,6 +26,7 @@ SWAGGER_AUTHENTICATION_SCHEMA = {
             'responses': {
                 '200': {'description': 'Successful login'},
                 '400': {'description': 'Missing parameter'},
+                '401': {'description': 'Bad credentials'},
             },
             'tags': ['Authentication']
         }
@@ -46,11 +47,13 @@ class AuthenticationView(MethodView):
         if not nit or not token_pres or not token_prov:
             return jsonify({"msg": "Missing parameter"}), 400
 
-        identity = dict(
-            nit=nit,
-            token_pres=AuthenticationView.generate_token(nit, token_pres),
-            token_prov=AuthenticationView.generate_token(nit, token_prov),
-        )
+        token_pre = AuthenticationView.generate_token(nit, token_pres)
+        token_pro = AuthenticationView.generate_token(nit, token_prov)
+
+        if 'Message' in token_pre or 'Message' in token_pro:
+            return jsonify({"msg": "Bad credentials"}), 401
+
+        identity = dict(nit=nit, token_pres=token_pre, token_prov=token_pro)
 
         return jsonify(access_token=create_access_token(identity=identity)), 200
 
