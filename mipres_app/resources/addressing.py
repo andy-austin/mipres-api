@@ -2,10 +2,10 @@ import requests
 
 from flask import jsonify, request, current_app
 from flask.views import MethodView
-from flask_jwt_extended import jwt_required
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from mipres_app.models.addressing import AddressingMeta
+from mipres_app.models.addressing import Addressing
+from mipres_app.models.addressing_meta import AddressingMeta
 
 SWAGGER_ADDRESSING_SCHEMA = {
     '/addressing': {
@@ -66,34 +66,28 @@ SWAGGER_ADDRESSING_SCHEMA = {
 
 
 class AddressingView(MethodView):
-    @staticmethod
-    @jwt_required
-    def get():
-        start_date = request.args.get('startDate', None)
-        end_date = request.args.get('endDate', None)
+    start_date = None
+    end_date = None
 
-        documents = AddressingMeta.query.get_by_date_range(start_date, end_date).all()
-        response = []
-        for document in documents:
-            response += document.entities
+    def dispatch_request(self, *args, **kwargs):
+        data = request.json if request.json else request.args
+        self.start_date = data.get('startDate', None)
+        self.end_date = data.get('endDate', None)
 
-        return jsonify(response), 200
-
-    @staticmethod
-    @jwt_required
-    def post():
-        if not request.is_json:
-            return jsonify({"msg": "Missing JSON in request"}), 400
-
-        start_date = request.json.get('startDate', None)
-        end_date = request.json.get('endDate', None)
-
-        if not start_date or not end_date:
+        if not self.start_date or not self.end_date:
             return jsonify({"msg": "Missing parameter"}), 400
 
-        identity = get_jwt_identity()
+        return super(AddressingView, self).dispatch_request(*args, **kwargs)
 
-        AddressingMeta.handle(identity, start_date, end_date, AddressingView.generate_token)
+    @jwt_required
+    def get(self):
+        documents = Addressing.query.get_by_date_range(self.start_date, self.end_date).all()
+
+        return jsonify(documents), 200
+
+    @jwt_required
+    def post(self):
+        AddressingMeta.handle(get_jwt_identity(), self.start_date, self.end_date, AddressingView.generate_token)
 
         return jsonify(message='Ok'), 200
 
