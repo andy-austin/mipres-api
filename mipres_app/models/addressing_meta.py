@@ -1,7 +1,8 @@
-from mipres_app.mipres import db_session, socketio
+from mipres_app.mipres import db_session
 from datetime import datetime, timedelta
 from flask_mongoalchemy import BaseQuery
 from mipres_app.models.addressing import Addressing
+from mipres_app.models.base_meta import BaseMeta
 
 
 class AddressingMetaQuery(BaseQuery):
@@ -10,7 +11,7 @@ class AddressingMetaQuery(BaseQuery):
         return self.filter(self.type.document_date >= date, self.type.document_date <= end)
 
 
-class AddressingMeta(db_session.Document):
+class AddressingMeta(BaseMeta):
     query_class = AddressingMetaQuery
 
     exec_date = db_session.DateTimeField()
@@ -35,18 +36,20 @@ class AddressingMeta(db_session.Document):
         meta.save()
 
     @staticmethod
-    def handle(identity, start_date, end_date, generate_token):
+    def handle(identity, start_date, end_date, retrieve_addressing):
         delta = timedelta(days=1)
         start_date = datetime.strptime(start_date, "%Y-%m-%d")
         end_date = datetime.strptime(end_date, "%Y-%m-%d")
         days = (end_date - start_date).days
 
         while start_date <= end_date:
+            nit = identity.get('nit')
             days_left = (end_date - start_date).days
-            socketio.emit('addressing', dict(percent=round(100 - days_left * 100 / days), user=identity.get('nit')))
+
+            BaseMeta.socketio_emit('addressing', days_left, days, nit)
 
             if AddressingMeta.query.get_by_date(start_date).first() is None:
-                response = generate_token(identity.get('nit'), identity.get('token_pres'), start_date.strftime("%Y-%m-%d"))
+                response = retrieve_addressing(nit, identity.get('token_pres'), start_date.strftime("%Y-%m-%d"))
                 AddressingMeta.save_document(start_date, response, len(response))
 
             start_date += delta

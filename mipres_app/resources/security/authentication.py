@@ -1,7 +1,7 @@
 import requests
 from flask import jsonify, request, current_app
 from flask.views import MethodView
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity
 
 SWAGGER_AUTHENTICATION_SCHEMA = {
     '/login': {
@@ -29,6 +29,14 @@ SWAGGER_AUTHENTICATION_SCHEMA = {
                 '401': {'description': 'Bad credentials'},
             },
             'tags': ['Authentication']
+        },
+        'put': {
+            'operationId': 'refresh-token',
+            'responses': {
+                '200': {'description': 'Successful refresh token'},
+                '401': {'description': 'Unauthorized'},
+            },
+            'tags': ['Authentication']
         }
     }
 }
@@ -54,8 +62,15 @@ class AuthenticationView(MethodView):
             return jsonify({"msg": "Bad credentials"}), 401
 
         identity = dict(nit=nit, token_pres=token_pre, token_prov=token_pro)
+        access_token = create_access_token(identity=identity)
+        refresh_token = create_refresh_token(identity=identity)
 
-        return jsonify(access_token=create_access_token(identity=identity)), 200
+        return jsonify(access_token=access_token, refresh_token=refresh_token), 200
+
+    @staticmethod
+    @jwt_refresh_token_required
+    def put():
+        return jsonify(access_token=create_access_token(identity=get_jwt_identity(), fresh=False)), 200
 
     @staticmethod
     def generate_token(nit, token):

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import os.path as op
+import datetime
+
 from flask import Flask, request
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -13,6 +15,7 @@ app = Flask('mipresApi', root_path=root_path)
 
 app.config['MONGOALCHEMY_REPLICA_SET'] = None
 app.config['JWT_SECRET_KEY'] = '95C84B76351B248ECB7EA58319BA6'
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=240)
 app.config['MIPRES_API'] = "https://wsmipres.sispro.gov.co/WSSUMMIPRESNOPBS/Api"
 
 db_session = MongoAlchemy()

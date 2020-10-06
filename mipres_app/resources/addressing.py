@@ -89,14 +89,14 @@ class AddressingView(MethodView):
     def post(self):
         thread = AppContextThread(
             target=AddressingMeta.handle,
-            args=(get_jwt_identity(), self.start_date, self.end_date, AddressingView.generate_token)
+            args=(get_jwt_identity(), self.start_date, self.end_date, self.retrieve_addressing)
         )
         thread.start()
 
-        return jsonify(message='Ok'), 200
+        return jsonify(message='Thread started'), 200
 
     @staticmethod
-    def generate_token(nit, token, date):
+    def retrieve_addressing(nit, token, date):
         response = requests.get(
             '%s/DireccionamientoXFecha/%s/%s/%s' % (current_app.config.get('MIPRES_API'), nit, token, date)
         )
