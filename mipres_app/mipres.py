@@ -5,6 +5,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_mongoalchemy import MongoAlchemy
 from flask_jwt_extended import decode_token
+from flask_socketio import SocketIO
 
 root_path = op.join(op.dirname(__file__), '../')
 
@@ -15,6 +16,7 @@ app.config['JWT_SECRET_KEY'] = '95C84B76351B248ECB7EA58319BA6'
 app.config['MIPRES_API'] = "https://wsmipres.sispro.gov.co/WSSUMMIPRESNOPBS/Api"
 
 db_session = MongoAlchemy()
+socketio = SocketIO(app)
 
 
 def create_app(debug=False):
@@ -26,6 +28,8 @@ def create_app(debug=False):
 
     JWTManager(app)
     CORS(app)
+
+    socketio.init_app(app, cors_allowed_origins="*")
 
     @app.before_request
     def before_request_func():

@@ -1,4 +1,5 @@
 import requests
+from flaskthreads import AppContextThread
 
 from flask import jsonify, request, current_app
 from flask.views import MethodView
@@ -82,12 +83,15 @@ class AddressingView(MethodView):
     @jwt_required
     def get(self):
         documents = Addressing.query.get_by_date_range(self.start_date, self.end_date).all()
-
         return jsonify(documents), 200
 
     @jwt_required
     def post(self):
-        AddressingMeta.handle(get_jwt_identity(), self.start_date, self.end_date, AddressingView.generate_token)
+        thread = AppContextThread(
+            target=AddressingMeta.handle,
+            args=(get_jwt_identity(), self.start_date, self.end_date, AddressingView.generate_token)
+        )
+        thread.start()
 
         return jsonify(message='Ok'), 200
 
