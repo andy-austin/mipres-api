@@ -5,6 +5,7 @@ from mipres_app.mipres import db_session
 class BaseMeta(db_session.Document):
     @staticmethod
     def socketio_emit(event, part, total, user):
+        print('Thread status', event, BaseMeta.percent(part, total), user)
         return socketio.emit(event, dict(percent=BaseMeta.percent(part, total), user=user))
 
     @staticmethod

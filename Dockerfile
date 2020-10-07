@@ -7,7 +7,7 @@ WORKDIR /mipres-api
 COPY requirements.txt requirements.txt
 RUN python -m venv venv
 RUN venv/bin/pip install --upgrade -r requirements.txt
-RUN venv/bin/pip install gunicorn alembic eventlet
+RUN venv/bin/pip install gunicorn alembic gevent-websocket
 ENV PATH=/mipres-api/venv/bin:${PATH}
 COPY . .
 COPY ./k8s/entrypoint.sh .
