@@ -52,14 +52,7 @@ class AddressingSchedulerView(MethodView):
             scheduler.remove_job(self.job_id)
 
         params = ['Hola Mundo']
-        scheduler.add_job(self.job_id, func=addressing_scheduler, trigger='interval', seconds=days, args=params)
+        scheduler.add_job(self.job_id, func=addressing_scheduler, trigger='interval', days=days, args=params)
         # TODO: change seconds by days
 
         return jsonify(message='Scheduler started'), 200
-
-    # @staticmethod
-    # def retrieve_addressing(nit, token, date):
-    #     response = requests.get(
-    #         '%s/DireccionamientoXFecha/%s/%s/%s' % (current_app.config.get('MIPRES_API'), nit, token, date)
-    #     )
-    #     return response.json()
