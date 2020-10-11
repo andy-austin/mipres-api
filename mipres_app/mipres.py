@@ -3,6 +3,7 @@ import os.path as op
 import datetime
 
 from flask import Flask, request
+from flask_apscheduler import APScheduler
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_mongoalchemy import MongoAlchemy
@@ -20,6 +21,7 @@ app.config['MIPRES_API'] = "https://wsmipres.sispro.gov.co/WSSUMMIPRESNOPBS/Api"
 
 db_session = MongoAlchemy()
 socketio = SocketIO(app)
+scheduler = APScheduler()
 
 
 def create_app(debug=False):
@@ -33,6 +35,9 @@ def create_app(debug=False):
     CORS(app)
 
     socketio.init_app(app, cors_allowed_origins="*")
+    scheduler.init_app(app)
+
+    scheduler.start()
 
     @app.before_request
     def before_request_func():

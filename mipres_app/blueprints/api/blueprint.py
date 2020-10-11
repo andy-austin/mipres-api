@@ -2,6 +2,7 @@ from flask import Blueprint
 from flask_restless_swagger import SwagAPIManager as APIManager
 
 from mipres_app.resources.addressing import AddressingView, SWAGGER_ADDRESSING_SCHEMA
+from mipres_app.resources.addressing_scheduler import AddressingSchedulerView, SWAGGER_ADDRESSING_SCHEDULER_SCHEMA
 from mipres_app.resources.security.authentication import AuthenticationView, SWAGGER_AUTHENTICATION_SCHEMA
 
 
@@ -26,6 +27,12 @@ class BlueprintAPI(Blueprint):
         paths.update(SWAGGER_ADDRESSING_SCHEMA)
         app.add_url_rule(
             '%s/addressing' % url_prefix, view_func=AddressingView.as_view('addressing'), methods=['POST', 'GET']
+        )
+
+        paths.update(SWAGGER_ADDRESSING_SCHEDULER_SCHEMA)
+        app.add_url_rule(
+            '%s/addressing-scheduler' % url_prefix, view_func=AddressingSchedulerView.as_view('addressing-scheduler'),
+            methods=['POST']
         )
 
 
